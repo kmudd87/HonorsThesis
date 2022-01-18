@@ -4,7 +4,7 @@
 %CDIPHs is significant wave heights within desired time range
 %time is ncread of thredds.cdip.ucsd.edu for waveTime
 %Hs is ncread of thredds.cdip.ucsd.edu for waveHs
-function [CDIPt CDIPHs] = CDIPtime(time, Hs, startTime, endTime)
+function [CDIPt,CDIPHs,CDIPindices] = CDIPtime(time, Hs, startTime, endTime)
     %convert startTime
     startTime = int2str(startTime);
     y_start = str2num(startTime(:,1:4));
@@ -32,4 +32,6 @@ function [CDIPt CDIPHs] = CDIPtime(time, Hs, startTime, endTime)
     end_index = end_index(1)-1;
     CDIPt = CDIPt(start_index:end_index);
     CDIPHs = Hs(start_index:end_index);
+    CDIPindices = start_index:end_index;
 end
+
