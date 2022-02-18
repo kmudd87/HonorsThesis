@@ -1,7 +1,7 @@
 %startTime and endTime in YYYYmmDDHHMMSS format 
 %freqTable is a readtable of a .txt from CDIP download 9-band energy
 %gliderTable is metbuoy data table from gliderTime.m
-function [ ] = windWaveCorr(freqTable, startTime, endTime, wgt, wgWind10m)   
+function [covariance_energy, covariance_Hs] = windWaveCorr(freqTable, startTime, endTime, wgt, wgWind10m, stnName)   
     %edit start and end times because frequency band energies are to 30 min precision
     startTime = int2str(startTime);
     startTime = str2num(startTime(1:12));
@@ -73,7 +73,8 @@ function [ ] = windWaveCorr(freqTable, startTime, endTime, wgt, wgWind10m)
     subplot(3,3,9)
     scatter(wgWind10m,energies(:,9))
     title('2-6s')
-    sgtitle('Wind Speed vs. Wave Energy, 9-Band') 
+    t = strcat('Wind Speed vs. Wave Energy, 9-Band, ', stnName);
+    sgtitle(t) 
     han=axes(figure(1),'visible','off'); 
     han.Title.Visible='on';
     han.XLabel.Visible='on';
@@ -81,18 +82,19 @@ function [ ] = windWaveCorr(freqTable, startTime, endTime, wgt, wgWind10m)
     ylabel(han, 'band energy (cm^{2})')
     xlabel(han, 'wind speed')
     %wave energy - wind correlation
-    covariance_energy = cov([wgWind10m energies]);
-    ww_cov_energy = NaN(9,1);
-    for i = 1:9
-        ww_cov_energy(i) = covariance_energy(i+1,i+1);
-    end
+    covariance_energy = corrcoef([wgWind10m energies],'Rows','pairwise');
+    covariance_energy = covariance_energy(1,2:10);
     freqs = [22 20 17 15 13 11 9 7 4];
     %plot correlation term for each average frequency band value 
     figure(2)
-    scatter(freqs,ww_cov_energy,'o','filled')
-    ylabel('covariance')
-    xlabel('frequency (s)')
-    title('Wind-Wave Energy Correlation')
+    plot(freqs,covariance_energy,'k')
+    hold on
+    scatter(freqs,covariance_energy,'o','filled','b')
+    ylabel('correlation coefficient')
+    xlabel('period (s)')
+    t = strcat('Wind-Wave Energy Correlation,', stnName); 
+    title(t)
+    hold off
     %plot wind speeds vs equivalent Hs for each frequency band
     figure(3)
     subplot(3,3,1)
@@ -121,8 +123,9 @@ function [ ] = windWaveCorr(freqTable, startTime, endTime, wgt, wgWind10m)
     title('6-8s')
     subplot(3,3,9)
     scatter(wgWind10m,Hs(:,9),'r')
-    title('2-6s')
-    sgtitle('Wind Speed vs. Equivalent Hs, 9-Band')
+    title('2-6s') 
+    t = strcat('Wind Speed vs. Equivalent Hs, 9-Band, ', stnName);
+    sgtitle(t) 
     han=axes(figure(3),'visible','off'); 
     han.Title.Visible='on';
     han.XLabel.Visible='on';
@@ -130,16 +133,17 @@ function [ ] = windWaveCorr(freqTable, startTime, endTime, wgt, wgWind10m)
     ylabel(han, 'equivalent Hs (cm)')
     xlabel(han, 'wind speed')
     %equivalent Hs - wind correlation
-    covariance_Hs = cov([wgWind10m Hs]);
-    ww_cov_Hs = NaN(9,1);
-    for i = 1:9
-        ww_cov_Hs(i) = covariance_Hs(i+1,i+1);
-    end
+    covariance_Hs = corrcoef([wgWind10m Hs],'Rows','pairwise');
+    covariance_Hs = covariance_Hs(1,2:10);
     freqs = [22 20 17 15 13 11 9 7 4];
     %plot correlation term for each average frequency band value
     figure(4)
-    scatter(freqs,ww_cov_Hs,'o','filled','r')
-    ylabel('covariance')
+    plot(freqs,covariance_Hs,'k')
+    hold on
+    scatter(freqs,covariance_Hs,'o','filled','r')
+    ylabel('correlation coefficient')
     xlabel('frequency (s)')
-    title('Wind-Equivalent Hs Correlation')
+    t = strcat('Wind-Equivalent Hs Correlation,', stnName); 
+    title(t)
+    hold off
 end
